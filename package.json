@@ -1,0 +1,17 @@
+{
+  "name": "canvas-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "description": "CanVas - realtime collaborative notes + drawing rooms",
+  "scripts": {
+    "dev": "pnpm --parallel --filter \"./apps/*\" dev",
+    "dev:web": "pnpm --filter web dev",
+    "dev:sync": "pnpm --filter sync dev",
+    "build": "pnpm --filter web build",
+    "lint": "pnpm --filter web lint"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@11.1.3"
+}

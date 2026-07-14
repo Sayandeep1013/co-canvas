@@ -1,0 +1,16 @@
+{
+  "name": "sync",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "CanVas realtime sync server — a dumb Yjs relay (docs/03-TECH.md §3)",
+  "scripts": {
+    "dev": "node --watch server.js",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@y/websocket-server": "^0.1.1",
+    "ws": "^8.18.0",
+    "yjs": "^13.6.20"
+  }
+}

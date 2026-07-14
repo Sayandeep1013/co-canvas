@@ -1,0 +1,9 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+# Allow these native/postinstall build scripts to run (needed by Next.js image
+# optimization and the eslint resolver). Everything else stays blocked by default.
+allowBuilds:
+  sharp: true
+  unrs-resolver: true

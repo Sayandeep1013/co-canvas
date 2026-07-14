@@ -1,8 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // The shared package ships raw .ts; let Next transpile it.
-  transpilePackages: ["@canvas/shared"],
+  transpilePackages: [
+    "@canvas/shared",
+    "@blocknote/core",
+    "@blocknote/react",
+    "@blocknote/mantine",
+  ],
 };
 
 export default nextConfig;

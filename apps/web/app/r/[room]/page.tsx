@@ -1,5 +1,5 @@
 import { slugify } from "@canvas/shared";
-import RoomPhase0 from "@/components/RoomPhase0";
+import Room from "@/components/Room";
 
 /**
  * Room route. In Next 16 `params` is async. We normalize the slug here (server)
@@ -12,5 +12,5 @@ export default async function RoomPage({
 }) {
   const { room } = await params;
   const slug = slugify(decodeURIComponent(room));
-  return <RoomPhase0 slug={slug} />;
+  return <Room slug={slug} />;
 }

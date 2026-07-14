@@ -1,6 +1,7 @@
-import { Identity, pickColor, randomId } from "@canvas/shared";
+import { Identity, PALETTE, pickColor, randomId } from "@canvas/shared";
 
 const KEY = "canvas.identity.v1";
+const SETUP_KEY = "canvas.identity.setup.v1";
 
 /**
  * Load the persisted identity (id + name + color) from localStorage, or create
@@ -9,7 +10,6 @@ const KEY = "canvas.identity.v1";
  */
 export function getOrCreateIdentity(): Identity {
   if (typeof window === "undefined") {
-    // SSR guard — never actually used to render collaborative UI.
     return { id: "ssr", displayName: "…", color: pickColor("ssr") };
   }
   try {
@@ -26,10 +26,9 @@ export function getOrCreateIdentity(): Identity {
   const id = randomId();
   const identity: Identity = {
     id,
-    displayName: `guest-${id.slice(0, 4)}`,
+    displayName: "",
     color: pickColor(id),
   };
-  saveIdentity(identity);
   return identity;
 }
 
@@ -41,3 +40,15 @@ export function saveIdentity(identity: Identity): void {
     // ignore quota / privacy-mode errors
   }
 }
+
+export function hasCompletedIdentitySetup(): boolean {
+  if (typeof window === "undefined") return false;
+  return window.localStorage.getItem(SETUP_KEY) === "1";
+}
+
+export function markIdentitySetupComplete(): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(SETUP_KEY, "1");
+}
+
+export { PALETTE };

@@ -26,10 +26,16 @@ export interface CursorState {
 /**
  * The full per-connection awareness state (ephemeral, never persisted).
  * See docs/04-LOGIC.md §5.
+ *
+ * NOTE: field names here are deliberately NOT `user` or `cursor` — those are
+ * owned by BlockNote's y-prosemirror collaboration cursor plugin, which stores
+ * a ProseMirror relative position under `cursor`. Reusing them corrupts the
+ * text caret and crashes BlockNote. Keep our presence data on its own fields.
  */
 export interface AwarenessState {
-  user: Identity;
-  cursor: CursorState | null;
+  identity: Identity;
+  /** Live pointer on the canvas surface (null when not drawing). */
+  canvasCursor: CursorState | null;
   activeSurface: SurfaceId;
 }
 

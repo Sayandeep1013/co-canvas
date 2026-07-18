@@ -11,7 +11,7 @@
  */
 import http from "http";
 import { WebSocketServer } from "ws";
-import { setupWSConnection } from "@y/websocket-server/utils";
+import { setupWSConnection } from "y-websocket/bin/utils";
 
 const host = process.env.HOST || "localhost";
 const port = Number(process.env.PORT) || 1234;

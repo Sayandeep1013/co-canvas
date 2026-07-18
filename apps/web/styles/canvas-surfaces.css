@@ -1,0 +1,180 @@
+/**
+ * CanVas-branded surfaces — Excalidraw + Notes reskinned so they read as a
+ * clean design tool, NOT stock Excalidraw. Flat panels, crisp geometry,
+ * CanVas tokens, a proper design-canvas dot grid.
+ */
+
+.canvas-workspace {
+  --ex-primary: var(--canvas-accent);
+  --ex-primary-hover: var(--canvas-accent-hover);
+  --ex-primary-light: var(--canvas-accent-soft);
+  --ex-surface: var(--canvas-surface);
+  --ex-border: var(--canvas-border);
+
+  height: 100%;
+  padding: 12px;
+  background: var(--canvas-bg-subtle);
+}
+
+/* The framed canvas — flat, rounded, with a subtle design-surface dot grid */
+.canvas-workspace .excalidraw {
+  height: 100% !important;
+  border: 1px solid var(--ex-border);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--canvas-shadow-md);
+
+  /* Clean UI font + flatter geometry than stock Excalidraw */
+  --ui-font: var(--font-geist-sans), system-ui, sans-serif;
+  --border-radius-md: 8px;
+  --border-radius-lg: 10px;
+
+  background-color: var(--canvas-surface);
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    color-mix(in srgb, var(--canvas-border) 85%, transparent) 1px,
+    transparent 0
+  );
+  background-size: 22px 22px;
+}
+
+.canvas-workspace .excalidraw,
+.canvas-workspace .excalidraw * {
+  font-family: var(--ui-font);
+}
+
+/* Re-theme Excalidraw purple → CanVas terracotta; let the grid show through */
+.canvas-workspace .excalidraw.theme--light {
+  --color-primary: var(--ex-primary);
+  --color-primary-darker: var(--canvas-accent-hover);
+  --color-primary-darkest: #7c2d12;
+  --color-primary-light: var(--ex-primary-light);
+  --color-primary-light-darker: #fdba74;
+  --color-primary-hover: var(--ex-primary-hover);
+  --island-bg-color: var(--ex-surface);
+  --default-bg-color: transparent;
+  --input-bg-color: var(--ex-surface);
+  --input-border-color: var(--ex-border);
+  --button-hover-bg: var(--canvas-bg-subtle);
+  --color-logo-icon: var(--ex-primary);
+  --color-promo: var(--ex-primary);
+  --popup-bg-color: var(--ex-surface);
+  --popup-text-color: var(--canvas-ink);
+}
+
+.canvas-workspace .excalidraw.theme--dark {
+  --color-primary: var(--canvas-accent);
+  --color-primary-hover: var(--canvas-accent-hover);
+  --island-bg-color: var(--canvas-surface);
+  --default-bg-color: transparent;
+  --color-logo-icon: var(--canvas-accent);
+}
+
+/* Hide stock Excalidraw onboarding — we show the CanVas empty state */
+.canvas-workspace .excalidraw .HintViewer,
+.canvas-workspace .excalidraw .welcome-screen-decor,
+.canvas-workspace .excalidraw .welcome-screen-center {
+  display: none !important;
+}
+
+/* Flat, floating design-tool panels (side panels, popovers) */
+.canvas-workspace .excalidraw .Island {
+  border-radius: 14px !important;
+  border: 1px solid var(--ex-border) !important;
+  box-shadow: var(--canvas-shadow-lg) !important;
+  background: var(--ex-surface) !important;
+}
+
+/* ── Move the tool bar to the BOTTOM-CENTER ─────────────────────── */
+/* Span the top fixed container over the whole canvas so we can re-place
+   the tools independently of the top-left menu / top-right controls. */
+.canvas-workspace .excalidraw .FixedSideContainer_side_top {
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 100%;
+  pointer-events: none;
+}
+.canvas-workspace .excalidraw .FixedSideContainer_side_top > * {
+  pointer-events: auto;
+}
+.canvas-workspace .excalidraw .App-menu_top {
+  height: 100%;
+}
+/* Anchor the tools to the bottom-center */
+.canvas-workspace .excalidraw .shapes-section {
+  position: absolute !important;
+  left: 50% !important;
+  bottom: 20px !important;
+  transform: translateX(-50%);
+  margin: 0 !important;
+  z-index: 6;
+}
+
+/* Solid, clearly-separated tool bar (no longer melts into the canvas) */
+.canvas-workspace .excalidraw .shapes-section .Island {
+  background: var(--ex-surface) !important;
+  border: 1px solid var(--ex-border) !important;
+  box-shadow: var(--canvas-shadow-lg) !important;
+  padding: 6px !important;
+  gap: 3px;
+}
+
+/* Each tool gets its own chip so icons stand out */
+.canvas-workspace .excalidraw .ToolIcon__icon {
+  border-radius: 10px !important;
+  background: var(--canvas-bg-subtle) !important;
+}
+.canvas-workspace .excalidraw .ToolIcon__icon:hover {
+  background: var(--canvas-accent-soft) !important;
+}
+.canvas-workspace
+  .excalidraw
+  .ToolIcon_type_radio:checked
+  + .ToolIcon__icon,
+.canvas-workspace .excalidraw .ToolIcon--selected .ToolIcon__icon {
+  background: var(--ex-primary) !important;
+  color: #fff !important;
+}
+
+/* Hide Excalidraw's Library trigger (top-right) — reduces the stock feel */
+.canvas-workspace .excalidraw .layer-ui__wrapper__top-right {
+  display: none !important;
+}
+
+/* Zoom / undo footer controls — solid + separated too */
+.canvas-workspace .excalidraw .zoom-actions,
+.canvas-workspace .excalidraw .undo-redo-buttons {
+  border-radius: 12px !important;
+  background: var(--ex-surface) !important;
+  border: 1px solid var(--ex-border) !important;
+  box-shadow: var(--canvas-shadow-md) !important;
+}
+
+/* ── Notes — full-width writing surface ────────────────────────── */
+.notes-workspace {
+  height: 100%;
+  background: var(--canvas-surface);
+}
+
+/* Use the whole page to write. A generous max-width only kicks in on very
+   wide screens so line length stays readable; on laptops/desktop it's full. */
+.notes-workspace .bn-container {
+  max-width: none;
+  height: 100%;
+  margin: 0;
+  background: var(--canvas-surface);
+  padding: 1.5rem clamp(1rem, 6vw, 5rem);
+}
+
+@media (min-width: 1600px) {
+  .notes-workspace .bn-container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+}
+
+.notes-workspace .bn-editor {
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}

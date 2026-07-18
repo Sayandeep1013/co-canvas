@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { Check, FileText, Link2, Palette } from "lucide-react";
 import { Identity, SurfaceId } from "@canvas/shared";
 import {
   getOrCreateIdentity,
@@ -10,9 +11,12 @@ import {
 } from "@/lib/identity";
 import { useRoom, type ConnectionStatus } from "@/lib/yjs/useRoom";
 import IdentityPrompt from "@/components/IdentityPrompt";
-import PresenceRail from "@/components/PresenceRail";
+import PresenceCluster from "@/components/PresenceCluster";
 import NotesSurface from "@/components/NotesSurface";
 import CanvasSurface from "@/components/CanvasSurface";
+import { Button } from "@/components/ui/Button";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
+import { Loader } from "@/components/ui/Loader";
 
 interface RoomProps {
   slug: string;
@@ -32,8 +36,8 @@ export default function Room({ slug }: RoomProps) {
 
   if (!mounted || !identity) {
     return (
-      <div className="flex flex-1 items-center justify-center text-neutral-400">
-        Loading…
+      <div className="flex flex-1 items-center justify-center">
+        <Loader label="Loading…" />
       </div>
     );
   }
@@ -68,55 +72,97 @@ function RoomConnected({
   const { doc, awareness, provider, status, synced, peers, updateAwareness } =
     useRoom(slug, identity);
   const [surface, setSurface] = useState<SurfaceId>("notes");
+  const [copied, setCopied] = useState(false);
+
+  const renameSelf = (name: string) => {
+    const next = { ...identity, displayName: name };
+    saveIdentity(next);
+    onIdentity(next);
+  };
 
   useEffect(() => {
-    updateAwareness({ activeSurface: surface, cursor: null });
+    updateAwareness({ activeSurface: surface });
   }, [surface, updateAwareness]);
 
   const setSurfaceAndNotify = (s: SurfaceId) => {
     setSurface(s);
-    updateAwareness({ activeSurface: s, cursor: null });
+    updateAwareness({ activeSurface: s });
   };
 
   const copyLink = async () => {
     await navigator.clipboard.writeText(window.location.href);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <header className="flex shrink-0 items-center justify-between border-b border-neutral-200 px-4 py-2 dark:border-neutral-800">
-        <div className="flex items-center gap-3">
-          <Link href="/" className="font-bold">
-            Can<span className="text-blue-600">V</span>as
-          </Link>
-          <span className="text-neutral-300">·</span>
-          <span className="font-mono text-sm text-neutral-600 dark:text-neutral-300">
-            {slug}
-          </span>
-        </div>
+    <div className="flex min-h-0 flex-1 flex-col bg-canvas-bg">
+      <header className="relative z-30 shrink-0 border-b border-canvas-border bg-canvas-surface/80 backdrop-blur-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <Link
+              href="/"
+              className="shrink-0 text-lg font-semibold text-canvas-ink"
+            >
+              Can<span className="text-canvas-accent">V</span>as
+            </Link>
+            <span className="hidden text-canvas-border sm:inline">·</span>
+            <span className="truncate font-mono text-sm text-canvas-muted">
+              {slug}
+            </span>
+          </div>
 
-        <div className="flex items-center gap-1 rounded-lg border border-neutral-200 p-1 dark:border-neutral-700">
-          <SurfaceTab
-            active={surface === "notes"}
-            onClick={() => setSurfaceAndNotify("notes")}
-            label="📝 Notes"
+          <SegmentedControl<SurfaceId>
+            value={surface}
+            onChange={setSurfaceAndNotify}
+            options={[
+              {
+                value: "notes",
+                label: (
+                  <span className="inline-flex items-center gap-1.5">
+                    <FileText className="h-3.5 w-3.5" aria-hidden />
+                    Notes
+                  </span>
+                ),
+              },
+              {
+                value: "canvas",
+                label: (
+                  <span className="inline-flex items-center gap-1.5">
+                    <Palette className="h-3.5 w-3.5" aria-hidden />
+                    Canvas
+                  </span>
+                ),
+              },
+            ]}
           />
-          <SurfaceTab
-            active={surface === "canvas"}
-            onClick={() => setSurfaceAndNotify("canvas")}
-            label="🎨 Canvas"
-          />
-        </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={copyLink}
-            className="rounded-lg border border-neutral-200 px-3 py-1.5 text-sm hover:bg-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-800"
-          >
-            🔗 Share
-          </button>
-          <StatusPill status={status} synced={synced} />
+          <div className="flex items-center gap-2">
+            <PresenceCluster
+              peers={peers}
+              identity={identity}
+              onRename={renameSelf}
+            />
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={copyLink}
+            >
+              {copied ? (
+                <>
+                  <Check className="h-4 w-4 text-canvas-success" aria-hidden />
+                  Copied
+                </>
+              ) : (
+                <>
+                  <Link2 className="h-4 w-4" aria-hidden />
+                  <span className="hidden sm:inline">Share</span>
+                </>
+              )}
+            </Button>
+            <StatusPill status={status} synced={synced} />
+          </div>
         </div>
       </header>
 
@@ -141,55 +187,13 @@ function RoomConnected({
             </>
           )}
           {!provider && (
-            <div className="flex h-full items-center justify-center text-neutral-400">
-              Connecting to room…
+            <div className="flex h-full items-center justify-center">
+              <Loader label="Connecting to room…" />
             </div>
           )}
         </main>
-
-        <aside className="hidden w-56 shrink-0 border-l border-neutral-200 p-4 lg:block dark:border-neutral-800">
-          <PresenceRail peers={peers} myId={identity.id} />
-          <div className="mt-4 rounded-xl border border-neutral-200 p-4 dark:border-neutral-800">
-            <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-neutral-500">
-              Your name
-            </label>
-            <input
-              value={identity.displayName}
-              onChange={(e) => {
-                const next = { ...identity, displayName: e.target.value };
-                saveIdentity(next);
-                onIdentity(next);
-              }}
-              className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-950"
-            />
-          </div>
-        </aside>
       </div>
     </div>
-  );
-}
-
-function SurfaceTab({
-  active,
-  onClick,
-  label,
-}: {
-  active: boolean;
-  onClick: () => void;
-  label: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${
-        active
-          ? "bg-blue-600 text-white"
-          : "text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800"
-      }`}
-    >
-      {label}
-    </button>
   );
 }
 
@@ -202,10 +206,10 @@ function StatusPill({
 }) {
   const dot =
     status === "connected"
-      ? "bg-green-500"
+      ? "bg-canvas-success"
       : status === "connecting"
-        ? "bg-amber-500"
-        : "bg-red-500";
+        ? "bg-canvas-warning"
+        : "bg-canvas-danger";
   const label =
     status === "connected"
       ? synced
@@ -216,9 +220,12 @@ function StatusPill({
         : "Reconnecting…";
 
   return (
-    <span className="flex items-center gap-2 text-xs text-neutral-500">
+    <span
+      className="inline-flex items-center gap-2 rounded-xl border border-canvas-border bg-canvas-surface px-2.5 py-2 text-xs text-canvas-muted sm:px-3"
+      title={label}
+    >
       <span className={`h-2 w-2 rounded-full ${dot}`} />
-      {label}
+      <span className="hidden sm:inline">{label}</span>
     </span>
   );
 }

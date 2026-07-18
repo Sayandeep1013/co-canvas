@@ -2,10 +2,15 @@
 
 import { Identity, PALETTE } from "@canvas/shared";
 import { useState } from "react";
+import { ArrowRight, Check } from "lucide-react";
 import {
   markIdentitySetupComplete,
   saveIdentity,
 } from "@/lib/identity";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Card } from "@/components/ui/Card";
+import { Avatar } from "@/components/ui/Avatar";
 
 interface IdentityPromptProps {
   roomSlug: string;
@@ -13,7 +18,6 @@ interface IdentityPromptProps {
   onComplete: (identity: Identity) => void;
 }
 
-/** First-time gate: pick a name + color before entering a room (DESIGN §5). */
 export default function IdentityPrompt({
   roomSlug,
   identity,
@@ -32,48 +36,68 @@ export default function IdentityPrompt({
   };
 
   return (
-    <div className="flex flex-1 items-center justify-center px-6 py-16">
-      <div className="w-full max-w-md rounded-2xl border border-neutral-200 bg-white p-8 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-        <p className="text-sm text-neutral-500">You&apos;re joining</p>
-        <p className="mb-6 font-mono text-lg font-semibold">{roomSlug}</p>
+    <div className="canvas-dot-bg flex flex-1 items-center justify-center px-6 py-16">
+      <Card elevation="md" className="w-full max-w-md p-8">
+        <div className="mb-6 flex items-center gap-4">
+          <Avatar name={name || "?"} color={color} size="lg" />
+          <div className="min-w-0">
+            <p className="text-xs font-medium uppercase tracking-wide text-canvas-muted">
+              Joining room
+            </p>
+            <p className="truncate font-mono text-lg font-semibold text-canvas-ink">
+              {roomSlug}
+            </p>
+          </div>
+        </div>
 
-        <label className="mb-2 block text-sm font-medium text-neutral-600">
+        <label className="mb-2 block text-sm font-medium text-canvas-ink">
           Your name
         </label>
-        <input
+        <Input
           autoFocus
           value={name}
           onChange={(e) => setName(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && enter()}
           placeholder="How should others see you?"
-          className="mb-5 w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-neutral-700 dark:bg-neutral-950"
+          className="mb-5"
         />
 
-        <p className="mb-2 text-sm font-medium text-neutral-600">Your color</p>
-        <div className="mb-6 flex flex-wrap gap-2">
-          {PALETTE.map((c) => (
-            <button
-              key={c}
-              type="button"
-              aria-label={`Pick color ${c}`}
-              onClick={() => setColor(c)}
-              className={`h-8 w-8 rounded-full border-2 transition ${
-                color === c ? "border-neutral-900 scale-110" : "border-transparent"
-              }`}
-              style={{ backgroundColor: c }}
-            />
-          ))}
+        <p className="mb-2 text-sm font-medium text-canvas-ink">Your color</p>
+        <div className="mb-7 grid grid-cols-6 gap-2.5">
+          {PALETTE.map((c) => {
+            const active = color === c;
+            return (
+              <button
+                key={c}
+                type="button"
+                aria-label={`Pick color ${c}`}
+                aria-pressed={active}
+                onClick={() => setColor(c)}
+                className={`flex aspect-square items-center justify-center rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-canvas-accent-soft ${
+                  active
+                    ? "ring-2 ring-canvas-ink ring-offset-2 ring-offset-canvas-surface"
+                    : "hover:scale-110"
+                }`}
+                style={{ backgroundColor: c }}
+              >
+                {active && (
+                  <Check className="h-4 w-4 text-white drop-shadow" aria-hidden />
+                )}
+              </button>
+            );
+          })}
         </div>
 
-        <button
+        <Button
           type="button"
           disabled={!name.trim()}
           onClick={enter}
-          className="w-full rounded-xl bg-blue-600 py-3 font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-40"
+          className="w-full"
         >
-          Enter room →
-        </button>
-      </div>
+          Enter room
+          <ArrowRight className="h-4 w-4" aria-hidden />
+        </Button>
+      </Card>
     </div>
   );
 }

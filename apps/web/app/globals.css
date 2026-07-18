@@ -1,26 +1,157 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* CanVas design tokens — see docs/02-DESIGN.md & .cursor/skills/canvas-ui */
+  --canvas-bg: #f7f5f0;
+  --canvas-bg-subtle: #efece4;
+  --canvas-surface: #fffcf7;
+  --canvas-ink: #1c1917;
+  --canvas-ink-soft: #44403c;
+  --canvas-muted: #78716c;
+  --canvas-border: #e7e2d9;
+  --canvas-accent: #c2410c;
+  --canvas-accent-hover: #9a3412;
+  --canvas-accent-soft: #fed7aa;
+  --canvas-success: #16a34a;
+  --canvas-warning: #d97706;
+  --canvas-danger: #dc2626;
+
+  /* Warm-tinted elevation scale — one system, three levels of depth */
+  --canvas-shadow-sm: 0 1px 2px color-mix(in srgb, #1c1917 6%, transparent);
+  --canvas-shadow-md:
+    0 2px 4px color-mix(in srgb, #1c1917 5%, transparent),
+    0 6px 16px color-mix(in srgb, #1c1917 8%, transparent);
+  --canvas-shadow-lg:
+    0 4px 8px color-mix(in srgb, #1c1917 6%, transparent),
+    0 16px 40px color-mix(in srgb, #1c1917 12%, transparent);
+
+  --background: var(--canvas-bg);
+  --foreground: var(--canvas-ink);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-canvas-bg: var(--canvas-bg);
+  --color-canvas-bg-subtle: var(--canvas-bg-subtle);
+  --color-canvas-surface: var(--canvas-surface);
+  --color-canvas-ink: var(--canvas-ink);
+  --color-canvas-ink-soft: var(--canvas-ink-soft);
+  --color-canvas-muted: var(--canvas-muted);
+  --color-canvas-border: var(--canvas-border);
+  --color-canvas-accent: var(--canvas-accent);
+  --color-canvas-accent-hover: var(--canvas-accent-hover);
+  --color-canvas-accent-soft: var(--canvas-accent-soft);
+  --color-canvas-success: var(--canvas-success);
+  --color-canvas-warning: var(--canvas-warning);
+  --color-canvas-danger: var(--canvas-danger);
+  --shadow-canvas-sm: var(--canvas-shadow-sm);
+  --shadow-canvas-md: var(--canvas-shadow-md);
+  --shadow-canvas-lg: var(--canvas-shadow-lg);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --canvas-bg: #141210;
+    --canvas-bg-subtle: #1c1917;
+    --canvas-surface: #1c1917;
+    --canvas-ink: #fafaf9;
+    --canvas-ink-soft: #d6d3d1;
+    --canvas-muted: #a8a29e;
+    --canvas-border: #292524;
+    --canvas-accent: #fb923c;
+    --canvas-accent-hover: #fdba74;
+    /* Mid-tone so focus rings stay visible against the dark surface */
+    --canvas-accent-soft: #7c2d12;
+
+    --canvas-shadow-sm: 0 1px 2px color-mix(in srgb, #000 40%, transparent);
+    --canvas-shadow-md:
+      0 2px 4px color-mix(in srgb, #000 35%, transparent),
+      0 6px 16px color-mix(in srgb, #000 45%, transparent);
+    --canvas-shadow-lg:
+      0 4px 8px color-mix(in srgb, #000 40%, transparent),
+      0 16px 40px color-mix(in srgb, #000 55%, transparent);
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--canvas-bg);
+  color: var(--canvas-ink);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Landing / identity brand moment — dot grid + a soft radial wash for depth */
+.canvas-dot-bg {
+  background-color: var(--canvas-bg);
+  background-image:
+    radial-gradient(
+      circle at 1px 1px,
+      color-mix(in srgb, var(--canvas-border) 70%, transparent) 1px,
+      transparent 0
+    );
+  background-size: 24px 24px;
+  position: relative;
+  isolation: isolate;
+}
+
+.canvas-dot-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      70% 55% at 50% 32%,
+      color-mix(in srgb, var(--canvas-accent) 10%, transparent) 0%,
+      transparent 70%
+    );
+}
+
+/* Branded loader — three dots pulsing in the accent color */
+.canvas-loader {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.canvas-loader > span {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: var(--canvas-accent);
+  animation: canvas-loader-bounce 1.2s ease-in-out infinite;
+}
+
+.canvas-loader > span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.canvas-loader > span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes canvas-loader-bounce {
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  40% {
+    transform: translateY(-5px);
+    opacity: 1;
+  }
 }

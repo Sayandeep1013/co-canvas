@@ -1,41 +1,37 @@
 # Deploying CanVas (free)
 
-CanVas is **two services**. Both have free tiers.
+CanVas is **two services**, both with free tiers:
 
 ```
-┌─────────────┐     wss://       ┌──────────────────┐
-│  Web (Next) │ ───────────────▶ │  Sync (Yjs relay) │
-│   Vercel    │  NEXT_PUBLIC_    │   Render (Node)   │
-└─────────────┘   SYNC_URL       └──────────────────┘
+┌─────────────┐    wss://       ┌────────────────────────────┐
+│  Web (Next) │ ──────────────▶ │  Sync (PartyKit + y-partykit) │
+│   Vercel    │  NEXT_PUBLIC_   │  Cloudflare Durable Objects   │
+└─────────────┘  PARTYKIT_HOST  └────────────────────────────┘
 ```
 
-No database is required. Rooms live in the sync server's memory + each
-browser's IndexedDB. (Optional durable storage is noted at the bottom.)
+Rooms are **always alive**: each room slug is its own Durable Object and
+`persist: { mode: "snapshot" }` snapshots the doc to storage, so a room survives
+with zero connected clients and across restarts. No separate database needed.
 
 ---
 
-## 1. Sync server → Render (free)
+## 1. Sync server → PartyKit (free)
 
-1. Push this repo to GitHub (done: `co-canvas`).
-2. Render → **New → Web Service** → connect the repo.
-3. Settings:
-   - **Root Directory:** *(leave blank — repo root)*
-   - **Runtime:** Node
-   - **Build Command:** `corepack enable && pnpm install`
-   - **Start Command:** `node apps/sync/server.js`
-   - **Instance Type:** Free
-4. Deploy. You'll get a URL like `https://canvas-sync.onrender.com`.
-   Visiting it in a browser should print `CanVas sync server: OK`.
-5. Your WebSocket URL is the same host with `wss://`:
-   `wss://canvas-sync.onrender.com`
+From the repo root:
 
-> **Free-tier caveat:** Render free web services **sleep after ~15 min idle**
-> and cold-start (~50s) on the next visit. Data isn't lost — when a returning
-> client reconnects, its IndexedDB copy re-seeds the room. For a *truly*
-> always-on free relay, see "Upgrade path" below.
+```bash
+pnpm deploy:party
+# (equivalently: cd apps/party && npx partykit deploy)
+```
 
-No env vars are needed on the sync server (Render injects `PORT`; the server
-binds `0.0.0.0`).
+- First run prompts a **GitHub login** (PartyKit auth) — free, no Cloudflare
+  account of your own required; PartyKit hosts it on Cloudflare for you.
+- It deploys the worker in `apps/party` and prints a host like:
+  `canvas-sync.<your-username>.partykit.dev`
+- Health check: open `https://canvas-sync.<user>.partykit.dev/parties/main/health`
+  or just the host — the server responds `CanVas sync (PartyKit): OK`.
+
+That host (without protocol) is your `NEXT_PUBLIC_PARTYKIT_HOST`.
 
 ---
 
@@ -45,13 +41,13 @@ binds `0.0.0.0`).
 2. Settings:
    - **Root Directory:** `apps/web`
    - **Framework Preset:** Next.js (auto-detected)
-   - Install/build are auto — Vercel handles the pnpm workspace.
+   - Install/build are automatic (Vercel handles the pnpm workspace).
 3. **Environment Variables** → add:
-   - `NEXT_PUBLIC_SYNC_URL` = `wss://canvas-sync.onrender.com`
-     *(your Render URL from step 1, with `wss://`)*
-4. Deploy. You'll get `https://your-app.vercel.app`.
+   - `NEXT_PUBLIC_PARTYKIT_HOST` = `canvas-sync.<your-username>.partykit.dev`
+     *(the host from step 1 — no `https://`, no trailing slash)*
+4. Deploy → `https://your-app.vercel.app`.
 
-That's it — open the Vercel URL, create a room, share the link.
+Open the Vercel URL, create a room, share the link. Done.
 
 ---
 
@@ -59,22 +55,17 @@ That's it — open the Vercel URL, create a room, share the link.
 
 | Service | Variable | Value | Required |
 |---------|----------|-------|----------|
-| Web (Vercel) | `NEXT_PUBLIC_SYNC_URL` | `wss://<sync-host>` | ✅ |
-| Sync (Render) | `PORT` | injected by host | auto |
-| Sync (Render) | `HOST` | defaults to `0.0.0.0` | no |
+| Web (Vercel) | `NEXT_PUBLIC_PARTYKIT_HOST` | `canvas-sync.<user>.partykit.dev` | ✅ |
+| Sync (PartyKit) | — | none; persistence is built in | — |
+
+Local dev uses `partykit dev` on `localhost:1999` and the client defaults to it,
+so nothing is needed locally.
 
 ---
 
-## Upgrade path (later, optional)
+## Notes
 
-- **Always-on free relay:** port the sync server to **Cloudflare Workers +
-  Durable Objects** (e.g. via PartyKit or `y-sweet`). Cloudflare's free tier is
-  always-on and global — no sleeping. Requires rewriting `apps/sync` (the raw
-  `ws` server can't run on Workers as-is).
-- **Durable rooms that survive a full restart with no clients:** add Yjs
-  persistence via `setPersistence()` — LevelDB on a disk volume (needs a host
-  with a persistent disk, e.g. a Render paid disk or Fly volume), or snapshot
-  to Postgres/Supabase/S3.
-- **Custom domain:** both Vercel and Render support free custom domains.
-
-None of these are needed for a working free MVP.
+- **Custom domain:** both Vercel and PartyKit support custom domains on free tiers.
+- **Scaling / limits:** PartyKit's free tier is generous for a hobby app; Durable
+  Objects are always-on (no cold-start sleep like a free Render web service).
+- **Auth:** intentionally none — anyone who knows/guesses a room name joins it.

@@ -85,7 +85,9 @@ export default function CanvasSurface({
       setReady(true);
       return;
     }
-    const t = setTimeout(() => setReady(true), 1500);
+    // Fallback if the server never syncs (offline): mount with whatever local
+    // (IndexedDB) data has loaded so the canvas isn't blocked forever.
+    const t = setTimeout(() => setReady(true), 4000);
     return () => clearTimeout(t);
   }, [synced]);
 

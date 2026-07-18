@@ -2,11 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import * as Y from "yjs";
-import { WebsocketProvider } from "y-websocket";
+import YPartyKitProvider from "y-partykit/provider";
 import { IndexeddbPersistence } from "y-indexeddb";
 import type { Awareness } from "y-protocols/awareness";
 import { AwarenessState, Identity, SurfaceId } from "@canvas/shared";
-import { SYNC_URL } from "./constants";
+import { PARTYKIT_HOST } from "./constants";
 
 export type ConnectionStatus = "connecting" | "connected" | "disconnected";
 
@@ -19,8 +19,8 @@ export interface PeerState {
 export interface RoomHandle {
   doc: Y.Doc;
   awareness: Awareness | null;
-  /** WebSocket provider — BlockNote binds to this for collaboration. */
-  provider: WebsocketProvider | null;
+  /** PartyKit Yjs provider — BlockNote binds to this for collaboration. */
+  provider: YPartyKitProvider | null;
   status: ConnectionStatus;
   synced: boolean;
   peers: PeerState[];
@@ -34,15 +34,23 @@ export function useRoom(roomSlug: string, identity: Identity): RoomHandle {
   const [synced, setSynced] = useState(false);
   const [peers, setPeers] = useState<PeerState[]>([]);
   const [awareness, setAwareness] = useState<Awareness | null>(null);
-  const [provider, setProvider] = useState<WebsocketProvider | null>(null);
+  const [provider, setProvider] = useState<YPartyKitProvider | null>(null);
 
   useEffect(() => {
+    // Local persistence (offline + instant reload). We deliberately do NOT gate
+    // the UI on IndexedDB "synced" — for a fresh client that fires immediately
+    // with an empty doc, before the server's content arrives.
     const idb = new IndexeddbPersistence(`canvas-room-${roomSlug}`, doc);
-    idb.on("synced", () => setSynced(true));
 
-    const ws = new WebsocketProvider(SYNC_URL, roomSlug, doc);
+    const ws = new YPartyKitProvider(PARTYKIT_HOST, roomSlug, doc);
     setAwareness(ws.awareness);
     setProvider(ws);
+
+    // Mark "synced" when the server finishes its initial sync, so the canvas can
+    // mount with the server's existing elements as initialData (which always
+    // paint, unlike elements streamed in after mount).
+    const onSync = (isSynced: boolean) => setSynced(isSynced);
+    ws.on("sync", onSync);
 
     // Our presence lives on `identity` / `canvasCursor` — NOT `user` / `cursor`,
     // which BlockNote's collaboration plugin owns (see AwarenessState note).
@@ -91,6 +99,7 @@ export function useRoom(roomSlug: string, identity: Identity): RoomHandle {
       window.removeEventListener("pagehide", onUnload);
       ws.awareness.off("change", onAwareness);
       ws.off("status", onStatus);
+      ws.off("sync", onSync);
       ws.awareness.setLocalState(null);
       ws.destroy();
       idb.destroy();

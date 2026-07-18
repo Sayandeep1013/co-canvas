@@ -4,9 +4,10 @@
   "private": true,
   "description": "CanVas - realtime collaborative notes + drawing rooms",
   "scripts": {
-    "dev": "pnpm --parallel --filter \"./apps/*\" dev",
+    "dev": "pnpm --parallel --filter web --filter party dev",
     "dev:web": "pnpm --filter web dev",
-    "dev:sync": "pnpm --filter sync dev",
+    "dev:party": "pnpm --filter party dev",
+    "deploy:party": "pnpm --filter party deploy",
     "build": "pnpm --filter web build",
     "lint": "pnpm --filter web lint"
   },

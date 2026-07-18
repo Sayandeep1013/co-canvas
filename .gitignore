@@ -32,3 +32,6 @@ coverage/
 
 # Stray screenshots dropped in the repo root
 /Screenshot*.png
+
+# PartyKit local dev state (Durable Object storage)
+apps/party/.partykit/

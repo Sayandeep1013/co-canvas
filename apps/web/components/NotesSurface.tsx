@@ -7,14 +7,14 @@ import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteView } from "@blocknote/mantine";
 import { PenLine } from "lucide-react";
 import type * as Y from "yjs";
-import type { WebsocketProvider } from "y-websocket";
+import type YPartyKitProvider from "y-partykit/provider";
 import { Identity } from "@canvas/shared";
 import { useEffect, useMemo } from "react";
 import { useTheme } from "@/lib/theme";
 
 interface NotesSurfaceProps {
   doc: Y.Doc;
-  provider: WebsocketProvider;
+  provider: YPartyKitProvider;
   identity: Identity;
   visible: boolean;
 }

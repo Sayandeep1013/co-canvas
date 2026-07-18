@@ -1,0 +1,17 @@
+{
+  "name": "party",
+  "version": "0.0.0",
+  "private": true,
+  "description": "CanVas realtime sync — PartyKit + y-partykit on Cloudflare Durable Objects (always-alive rooms)",
+  "scripts": {
+    "dev": "partykit dev",
+    "deploy": "partykit deploy"
+  },
+  "dependencies": {
+    "y-partykit": "^0.0.33",
+    "yjs": "^13.6.31"
+  },
+  "devDependencies": {
+    "partykit": "^0.0.114"
+  }
+}

@@ -1,5 +1,9 @@
 import * as Y from "yjs";
-import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
+import type {
+  BinaryFileData,
+  BinaryFiles,
+  ExcalidrawImperativeAPI,
+} from "@excalidraw/excalidraw/types";
 import type { ExcalidrawElement } from "@excalidraw/excalidraw/element/types";
 import { YJS_LOCAL_ORIGIN } from "./constants";
 
@@ -106,9 +110,26 @@ export function readCanvasElements(doc: Y.Doc): ExcalidrawElement[] {
   return els;
 }
 
+/**
+ * Read all synced image/binary files (for initial mount). Excalidraw stores
+ * image data separately from elements, keyed by fileId — without syncing these,
+ * remote peers only see an empty placeholder.
+ */
+export function readCanvasFiles(doc: Y.Doc): BinaryFiles {
+  const filesMap = doc.getMap<BinaryFileData>("files");
+  const files: BinaryFiles = {};
+  filesMap.forEach((file, id) => {
+    files[id] = file;
+  });
+  return files;
+}
+
 export interface ExcalidrawBinding {
-  /** Pass to Excalidraw's `onChange` prop. */
-  onChange: (elements: readonly ExcalidrawElement[]) => void;
+  /** Pass to Excalidraw's `onChange` prop (elements + binary files). */
+  onChange: (
+    elements: readonly ExcalidrawElement[],
+    files?: BinaryFiles,
+  ) => void;
   /** Call once when the API ref is ready. */
   hydrate: () => void;
   destroy: () => void;
@@ -121,19 +142,25 @@ export function createExcalidrawBinding(
   options: ExcalidrawBindingOptions = {},
 ): ExcalidrawBinding {
   const canvasMap = doc.getMap<Y.Map<unknown>>("canvas");
+  const filesMap = doc.getMap<BinaryFileData>("files");
   const lastSeenVersion = new Map<string, number>();
+  const sentFiles = new Set<string>();
   let applyingRemote = false;
   let rafId: number | null = null;
   let pendingElements: readonly ExcalidrawElement[] | null = null;
+  let pendingFiles: BinaryFiles | null = null;
 
   const flushOutgoing = () => {
     rafId = null;
-    if (!pendingElements || applyingRemote) return;
+    if (applyingRemote) return;
     const elements = pendingElements;
+    const files = pendingFiles;
     pendingElements = null;
+    pendingFiles = null;
+    if (!elements && !files) return;
 
     doc.transact(() => {
-      for (const el of elements) {
+      for (const el of elements ?? []) {
         const prev = lastSeenVersion.get(el.id);
         if (prev !== undefined && el.version <= prev) continue;
 
@@ -145,12 +172,36 @@ export function createExcalidrawBinding(
         writeElementToYMap(yEl, el);
         lastSeenVersion.set(el.id, el.version);
       }
+      // Publish any image/binary files we haven't sent yet.
+      if (files) {
+        for (const [id, file] of Object.entries(files)) {
+          if (sentFiles.has(id) || filesMap.has(id)) {
+            sentFiles.add(id);
+            continue;
+          }
+          filesMap.set(id, file);
+          sentFiles.add(id);
+        }
+      }
     }, YJS_LOCAL_ORIGIN);
+  };
+
+  const applyRemoteFiles = (api: ExcalidrawImperativeAPI) => {
+    const existing = api.getFiles();
+    const toAdd: BinaryFileData[] = [];
+    filesMap.forEach((file, id) => {
+      sentFiles.add(id);
+      if (!existing[id]) toAdd.push(file);
+    });
+    if (toAdd.length) api.addFiles(toAdd);
   };
 
   const applyRemote = () => {
     const api = getApi();
     if (!api || applyingRemote) return;
+
+    // Add image data first so image elements render instead of a placeholder.
+    applyRemoteFiles(api);
 
     const skipId = options.getEditingElementId?.() ?? null;
     const remoteById = new Map<string, ExcalidrawElement>();
@@ -175,9 +226,13 @@ export function createExcalidrawBinding(
     options.onApply?.(merged.some((e) => !e.isDeleted));
   };
 
-  const onChange = (elements: readonly ExcalidrawElement[]) => {
+  const onChange = (
+    elements: readonly ExcalidrawElement[],
+    files?: BinaryFiles,
+  ) => {
     if (applyingRemote) return;
     pendingElements = elements;
+    if (files) pendingFiles = files;
     if (rafId === null) {
       rafId = requestAnimationFrame(flushOutgoing);
     }
@@ -187,14 +242,23 @@ export function createExcalidrawBinding(
     if (transaction.origin === YJS_LOCAL_ORIGIN) return;
     applyRemote();
   };
+  const filesObserver = (
+    _event: Y.YMapEvent<BinaryFileData>,
+    transaction: Y.Transaction,
+  ) => {
+    if (transaction.origin === YJS_LOCAL_ORIGIN) return;
+    applyRemote();
+  };
 
   canvasMap.observeDeep(observer);
+  filesMap.observe(filesObserver);
 
   return {
     onChange,
     hydrate: applyRemote,
     destroy: () => {
       canvasMap.unobserveDeep(observer);
+      filesMap.unobserve(filesObserver);
       if (rafId !== null) cancelAnimationFrame(rafId);
     },
   };

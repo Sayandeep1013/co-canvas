@@ -8,8 +8,10 @@ import { MousePointer2, Pencil, Sparkles } from "lucide-react";
 import type * as Y from "yjs";
 import type { Awareness } from "y-protocols/awareness";
 import type {
+  BinaryFiles,
   Collaborator,
   ExcalidrawImperativeAPI,
+  ExcalidrawProps,
   SocketId,
 } from "@excalidraw/excalidraw/types";
 import type { ExcalidrawElement } from "@excalidraw/excalidraw/element/types";
@@ -17,13 +19,29 @@ import { AwarenessState, Identity } from "@canvas/shared";
 import {
   createExcalidrawBinding,
   readCanvasElements,
+  readCanvasFiles,
 } from "@/lib/yjs/excalidrawBinding";
 import type { PeerState } from "@/lib/yjs/useRoom";
 import { useTheme } from "@/lib/theme";
 import { Loader } from "@/components/ui/Loader";
 
+// Excalidraw wrapped with a CUSTOM menu — this replaces the stock menu, so its
+// Excalidraw+/GitHub/socials section is gone. We keep only the useful items.
 const Excalidraw = dynamic(
-  async () => (await import("@excalidraw/excalidraw")).Excalidraw,
+  async () => {
+    const { Excalidraw: Ex, MainMenu } = await import("@excalidraw/excalidraw");
+    function ExcalidrawWithMenu(props: ExcalidrawProps) {
+      return (
+        <Ex {...props}>
+          <MainMenu>
+            <MainMenu.DefaultItems.SaveAsImage />
+            <MainMenu.DefaultItems.ClearCanvas />
+          </MainMenu>
+        </Ex>
+      );
+    }
+    return ExcalidrawWithMenu;
+  },
   {
     ssr: false,
     loading: () => (
@@ -94,6 +112,7 @@ export default function CanvasSurface({
   const initialData = useMemo(
     () => ({
       elements: ready ? readCanvasElements(doc) : [],
+      files: ready ? readCanvasFiles(doc) : {},
       appState: {
         viewBackgroundColor: "transparent",
         // Clean, design-tool defaults — drop Excalidraw's sketchy signature.
@@ -141,8 +160,9 @@ export default function CanvasSurface({
     (
       elements: readonly ExcalidrawElement[],
       appState: { selectedElementIds?: Record<string, boolean> },
+      files: BinaryFiles,
     ) => {
-      bindingRef.current?.onChange(elements);
+      bindingRef.current?.onChange(elements, files);
       setIsEmpty(!elements.some((e) => !e.isDeleted));
       const selected = Object.keys(appState.selectedElementIds ?? {}).filter(
         (id) => appState.selectedElementIds?.[id],

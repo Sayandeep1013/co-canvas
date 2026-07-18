@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ArrowRight, Dices, PenLine, Shapes } from "lucide-react";
+import { ArrowRight, Dices, PenLine, Shapes, SquarePen } from "lucide-react";
 import { randomRoomName, slugify } from "@canvas/shared";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -27,6 +27,9 @@ export default function LandingPage() {
       </div>
       <div className="mx-auto flex w-full max-w-lg flex-1 flex-col justify-center px-6 pb-16">
         <div className="mb-10 text-center">
+          <div className="mb-4 flex justify-center">
+            <SquarePen className="h-14 w-14 text-canvas-accent" aria-hidden="true" />
+          </div>
           <Badge className="mb-6">
             <span className="h-1.5 w-1.5 rounded-full bg-canvas-success" />
             Realtime · no account

@@ -16,6 +16,11 @@ export const metadata: Metadata = {
   title: "CanVas — write + draw together",
   description:
     "Realtime collaborative rooms that are both a document editor and a drawing canvas. No login — just create or join a room.",
+  icons: {
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({

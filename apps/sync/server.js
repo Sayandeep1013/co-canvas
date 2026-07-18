@@ -13,7 +13,9 @@ import http from "http";
 import { WebSocketServer } from "ws";
 import { setupWSConnection } from "y-websocket/bin/utils";
 
-const host = process.env.HOST || "localhost";
+// Bind all interfaces by default so cloud hosts (Render/Fly/Railway) can reach
+// us; they inject PORT. Locally this is still reachable via localhost.
+const host = process.env.HOST || "0.0.0.0";
 const port = Number(process.env.PORT) || 1234;
 
 const server = http.createServer((req, res) => {

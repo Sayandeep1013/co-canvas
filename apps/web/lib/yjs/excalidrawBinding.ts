@@ -216,7 +216,10 @@ export function createExcalidrawBinding(
 
     applyingRemote = true;
     try {
-      api.updateScene({ elements: merged });
+      // captureUpdate "NEVER" keeps remote/peer changes OUT of this client's
+      // local undo stack — so Ctrl+Z only reverts YOUR actions one by one and
+      // never wipes a collaborator's work (or resets to a clean slate).
+      api.updateScene({ elements: merged, captureUpdate: "NEVER" });
       for (const el of merged) {
         lastSeenVersion.set(el.id, el.version);
       }

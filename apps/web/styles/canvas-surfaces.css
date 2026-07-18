@@ -77,34 +77,7 @@
   background: var(--ex-surface) !important;
 }
 
-/* ── Move the tool bar to the BOTTOM-CENTER ─────────────────────── */
-/* Span the top fixed container over the whole canvas so we can re-place
-   the tools independently of the top-left menu / top-right controls. */
-.canvas-workspace .excalidraw .FixedSideContainer_side_top {
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 100%;
-  pointer-events: none;
-}
-.canvas-workspace .excalidraw .FixedSideContainer_side_top > * {
-  pointer-events: auto;
-}
-.canvas-workspace .excalidraw .App-menu_top {
-  height: 100%;
-}
-/* Anchor the tools to the bottom-center */
-.canvas-workspace .excalidraw .shapes-section {
-  position: absolute !important;
-  left: 50% !important;
-  bottom: 20px !important;
-  transform: translateX(-50%);
-  margin: 0 !important;
-  z-index: 6;
-}
-
-/* Solid, clearly-separated tool bar (no longer melts into the canvas) */
+/* Solid, clearly-separated tool bar Island (cosmetic — all sizes) */
 .canvas-workspace .excalidraw .shapes-section .Island {
   background: var(--ex-surface) !important;
   border: 1px solid var(--ex-border) !important;
@@ -113,7 +86,7 @@
   gap: 3px;
 }
 
-/* Each tool gets its own chip so icons stand out */
+/* Each tool gets its own chip so icons stand out (all sizes) */
 .canvas-workspace .excalidraw .ToolIcon__icon {
   border-radius: 10px !important;
   background: var(--canvas-bg-subtle) !important;
@@ -130,18 +103,59 @@
   color: #fff !important;
 }
 
-/* Hide Excalidraw's Library trigger (top-right) — reduces the stock feel */
-.canvas-workspace .excalidraw .layer-ui__wrapper__top-right {
-  display: none !important;
-}
-
-/* Zoom / undo footer controls — solid + separated too */
+/* Zoom / undo footer controls — solid + separated too (all sizes) */
 .canvas-workspace .excalidraw .zoom-actions,
 .canvas-workspace .excalidraw .undo-redo-buttons {
   border-radius: 12px !important;
   background: var(--ex-surface) !important;
   border: 1px solid var(--ex-border) !important;
   box-shadow: var(--canvas-shadow-md) !important;
+}
+
+/* ── Phones: full-bleed canvas + let Excalidraw use its NATIVE mobile UI.
+   Our desktop bottom-toolbar re-layout fights Excalidraw's mobile chrome and
+   clips its controls, so we only apply that on tablet/desktop (below). ── */
+@media (max-width: 767px) {
+  .canvas-workspace {
+    padding: 0;
+  }
+  .canvas-workspace .excalidraw {
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+    box-shadow: none;
+  }
+}
+
+/* ── Tablet/desktop only: move the tool bar to the BOTTOM-CENTER and hide
+   Excalidraw's Library trigger. ── */
+@media (min-width: 768px) {
+  /* Span the top fixed container over the whole canvas so we can re-place
+     the tools independently of the top-left menu / top-right controls. */
+  .canvas-workspace .excalidraw .FixedSideContainer_side_top {
+    inset: 0;
+    height: 100%;
+    pointer-events: none;
+  }
+  .canvas-workspace .excalidraw .FixedSideContainer_side_top > * {
+    pointer-events: auto;
+  }
+  .canvas-workspace .excalidraw .App-menu_top {
+    height: 100%;
+  }
+  /* Anchor the tools to the bottom-center */
+  .canvas-workspace .excalidraw .shapes-section {
+    position: absolute !important;
+    left: 50% !important;
+    bottom: 20px !important;
+    transform: translateX(-50%);
+    margin: 0 !important;
+    z-index: 6;
+  }
+  /* Hide the Library trigger (reduces the stock Excalidraw feel) */
+  .canvas-workspace .excalidraw .layer-ui__wrapper__top-right {
+    display: none !important;
+  }
 }
 
 /* ── Notes — full-width writing surface ────────────────────────── */

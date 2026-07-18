@@ -114,24 +114,26 @@ function RoomConnected({
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-canvas-bg">
       <header className="relative z-30 shrink-0 border-b border-canvas-border bg-canvas-surface/80 backdrop-blur-sm">
-        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
-          <div className="flex min-w-0 items-center gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 sm:gap-3 sm:px-4 sm:py-3">
+          <div className="order-1 flex min-w-0 items-center gap-2 sm:gap-3">
             <Link
               href="/"
-              className="shrink-0 text-lg font-semibold text-canvas-ink"
+              className="shrink-0 text-base font-semibold text-canvas-ink sm:text-lg"
             >
               Can<span className="text-canvas-accent">V</span>as
             </Link>
             <span className="hidden text-canvas-border sm:inline">·</span>
-            <span className="truncate font-mono text-sm text-canvas-muted">
+            <span className="truncate font-mono text-xs text-canvas-muted sm:text-sm">
               {slug}
             </span>
           </div>
 
-          <SegmentedControl<SurfaceId>
-            value={surface}
-            onChange={setSurfaceAndNotify}
-            options={[
+          {/* Full-width own row on phones; centered between brand/actions on ≥sm */}
+          <div className="order-3 flex w-full justify-center sm:order-2 sm:w-auto">
+            <SegmentedControl<SurfaceId>
+              value={surface}
+              onChange={setSurfaceAndNotify}
+              options={[
               {
                 value: "notes",
                 label: (
@@ -141,19 +143,20 @@ function RoomConnected({
                   </span>
                 ),
               },
-              {
-                value: "canvas",
-                label: (
-                  <span className="inline-flex items-center gap-1.5">
-                    <Palette className="h-3.5 w-3.5" aria-hidden />
-                    Canvas
-                  </span>
-                ),
-              },
-            ]}
-          />
+                {
+                  value: "canvas",
+                  label: (
+                    <span className="inline-flex items-center gap-1.5">
+                      <Palette className="h-3.5 w-3.5" aria-hidden />
+                      Canvas
+                    </span>
+                  ),
+                },
+              ]}
+            />
+          </div>
 
-          <div className="flex items-center gap-2">
+          <div className="order-2 flex items-center gap-1.5 sm:order-3 sm:gap-2">
             <PresenceCluster
               peers={peers}
               identity={identity}

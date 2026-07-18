@@ -194,7 +194,7 @@ export default function CanvasSurface({
         });
       });
 
-      api.updateScene({ collaborators });
+      api.updateScene({ collaborators, captureUpdate: "NEVER" });
     };
 
     updateCollaborators();

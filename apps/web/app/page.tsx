@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export default function LandingPage() {
   const router = useRouter();
@@ -21,7 +22,10 @@ export default function LandingPage() {
 
   return (
     <main className="canvas-dot-bg flex min-h-full flex-1 flex-col">
-      <div className="mx-auto flex w-full max-w-lg flex-1 flex-col justify-center px-6 py-16">
+      <div className="flex justify-end p-4">
+        <ThemeToggle />
+      </div>
+      <div className="mx-auto flex w-full max-w-lg flex-1 flex-col justify-center px-6 pb-16">
         <div className="mb-10 text-center">
           <Badge className="mb-6">
             <span className="h-1.5 w-1.5 rounded-full bg-canvas-success" />
@@ -70,7 +74,7 @@ export default function LandingPage() {
               />
               <Button
                 type="submit"
-                disabled={!slugify(value)}
+                disabled={slugify(value).length === 0}
                 className="shrink-0"
               >
                 Go

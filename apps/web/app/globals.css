@@ -52,28 +52,36 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --canvas-bg: #141210;
-    --canvas-bg-subtle: #1c1917;
-    --canvas-surface: #1c1917;
-    --canvas-ink: #fafaf9;
-    --canvas-ink-soft: #d6d3d1;
-    --canvas-muted: #a8a29e;
-    --canvas-border: #292524;
-    --canvas-accent: #fb923c;
-    --canvas-accent-hover: #fdba74;
-    /* Mid-tone so focus rings stay visible against the dark surface */
-    --canvas-accent-soft: #7c2d12;
+:root {
+  color-scheme: light;
+}
 
-    --canvas-shadow-sm: 0 1px 2px color-mix(in srgb, #000 40%, transparent);
-    --canvas-shadow-md:
-      0 2px 4px color-mix(in srgb, #000 35%, transparent),
-      0 6px 16px color-mix(in srgb, #000 45%, transparent);
-    --canvas-shadow-lg:
-      0 4px 8px color-mix(in srgb, #000 40%, transparent),
-      0 16px 40px color-mix(in srgb, #000 55%, transparent);
-  }
+/*
+ * Dark theme is opt-in via a `data-theme="dark"` attribute on <html>, set by
+ * the theme toggle (and an inline script in layout.tsx to avoid a flash).
+ * Tokens flip here; Tailwind's --color-* map through var() so utilities follow.
+ * Excalidraw + BlockNote get the theme via their own `theme` prop (useTheme).
+ */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --canvas-bg: #141210;
+  --canvas-bg-subtle: #211d1a;
+  --canvas-surface: #1c1917;
+  --canvas-ink: #fafaf9;
+  --canvas-ink-soft: #d6d3d1;
+  --canvas-muted: #a8a29e;
+  --canvas-border: #34302b;
+  --canvas-accent: #fb923c;
+  --canvas-accent-hover: #fdba74;
+  --canvas-accent-soft: #7c2d12;
+
+  --canvas-shadow-sm: 0 1px 2px color-mix(in srgb, #000 40%, transparent);
+  --canvas-shadow-md:
+    0 2px 4px color-mix(in srgb, #000 35%, transparent),
+    0 6px 16px color-mix(in srgb, #000 45%, transparent);
+  --canvas-shadow-lg:
+    0 4px 8px color-mix(in srgb, #000 40%, transparent),
+    0 16px 40px color-mix(in srgb, #000 55%, transparent);
 }
 
 body {

@@ -12,6 +12,7 @@ import {
 import { useRoom, type ConnectionStatus } from "@/lib/yjs/useRoom";
 import IdentityPrompt from "@/components/IdentityPrompt";
 import PresenceCluster from "@/components/PresenceCluster";
+import ThemeToggle from "@/components/ThemeToggle";
 import NotesSurface from "@/components/NotesSurface";
 import CanvasSurface from "@/components/CanvasSurface";
 import { Button } from "@/components/ui/Button";
@@ -162,6 +163,7 @@ function RoomConnected({
               )}
             </Button>
             <StatusPill status={status} synced={synced} />
+            <ThemeToggle />
           </div>
         </div>
       </header>

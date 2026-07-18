@@ -16,6 +16,7 @@ import type { ExcalidrawElement } from "@excalidraw/excalidraw/element/types";
 import { AwarenessState, Identity } from "@canvas/shared";
 import { createExcalidrawBinding } from "@/lib/yjs/excalidrawBinding";
 import type { PeerState } from "@/lib/yjs/useRoom";
+import { useTheme } from "@/lib/theme";
 
 const Excalidraw = dynamic(
   async () => (await import("@excalidraw/excalidraw")).Excalidraw,
@@ -58,6 +59,7 @@ export default function CanvasSurface({
   visible,
   onActive,
 }: CanvasSurfaceProps) {
+  const theme = useTheme();
   const apiRef = useRef<ExcalidrawImperativeAPI | null>(null);
   const bindingRef = useRef<ReturnType<typeof createExcalidrawBinding> | null>(
     null,
@@ -201,7 +203,7 @@ export default function CanvasSurface({
       <Excalidraw
         excalidrawAPI={onApiReady}
         initialData={initialData}
-        theme="light"
+        theme={theme}
         isCollaborating
         onChange={onChange}
         onPointerUpdate={onPointerUpdate}

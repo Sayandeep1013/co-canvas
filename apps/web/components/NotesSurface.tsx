@@ -10,6 +10,7 @@ import type * as Y from "yjs";
 import type { WebsocketProvider } from "y-websocket";
 import { Identity } from "@canvas/shared";
 import { useEffect, useMemo } from "react";
+import { useTheme } from "@/lib/theme";
 
 interface NotesSurfaceProps {
   doc: Y.Doc;
@@ -24,6 +25,7 @@ export default function NotesSurface({
   identity,
   visible,
 }: NotesSurfaceProps) {
+  const theme = useTheme();
   const fragment = useMemo(() => doc.getXmlFragment("notes"), [doc]);
 
   const editor = useCreateBlockNote(
@@ -65,7 +67,11 @@ export default function NotesSurface({
         <PenLine className="h-3.5 w-3.5" aria-hidden />
         Shared notes · type <kbd className="rounded bg-canvas-bg-subtle px-1.5 py-0.5 font-mono">/</kbd> for blocks
       </div>
-      <BlockNoteView editor={editor} className="min-h-0 flex-1 overflow-auto" />
+      <BlockNoteView
+        editor={editor}
+        theme={theme}
+        className="min-h-0 flex-1 overflow-auto"
+      />
     </div>
   );
 }

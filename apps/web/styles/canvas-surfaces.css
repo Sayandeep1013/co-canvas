@@ -43,31 +43,23 @@
   font-family: var(--ui-font);
 }
 
-/* Re-theme Excalidraw purple → CanVas terracotta; let the grid show through */
-.canvas-workspace .excalidraw.theme--light {
-  --color-primary: var(--ex-primary);
-  --color-primary-darker: var(--canvas-accent-hover);
-  --color-primary-darkest: #7c2d12;
-  --color-primary-light: var(--ex-primary-light);
-  --color-primary-light-darker: #fdba74;
-  --color-primary-hover: var(--ex-primary-hover);
-  --island-bg-color: var(--ex-surface);
-  --default-bg-color: transparent;
-  --input-bg-color: var(--ex-surface);
-  --input-border-color: var(--ex-border);
-  --button-hover-bg: var(--canvas-bg-subtle);
-  --color-logo-icon: var(--ex-primary);
-  --color-promo: var(--ex-primary);
-  --popup-bg-color: var(--ex-surface);
-  --popup-text-color: var(--canvas-ink);
-}
-
-.canvas-workspace .excalidraw.theme--dark {
+/* Re-theme Excalidraw purple → CanVas terracotta. Token-driven so it works in
+   BOTH light and dark (Excalidraw's own theme prop handles icon/panel colors;
+   we only recolor the accent + surfaces to match our shell). */
+.canvas-workspace .excalidraw {
   --color-primary: var(--canvas-accent);
+  --color-primary-darker: var(--canvas-accent-hover);
+  --color-primary-darkest: var(--canvas-accent-hover);
+  --color-primary-light: var(--canvas-accent-soft);
   --color-primary-hover: var(--canvas-accent-hover);
   --island-bg-color: var(--canvas-surface);
   --default-bg-color: transparent;
+  --input-bg-color: var(--canvas-surface);
+  --input-border-color: var(--canvas-border);
+  --button-hover-bg: var(--canvas-bg-subtle);
   --color-logo-icon: var(--canvas-accent);
+  --color-promo: var(--canvas-accent);
+  --popup-bg-color: var(--canvas-surface);
 }
 
 /* Hide stock Excalidraw onboarding — we show the CanVas empty state */

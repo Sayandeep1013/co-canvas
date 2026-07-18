@@ -29,3 +29,6 @@ Thumbs.db
 *.tsbuildinfo
 .turbo/
 coverage/
+
+# Stray screenshots dropped in the repo root
+/Screenshot*.png

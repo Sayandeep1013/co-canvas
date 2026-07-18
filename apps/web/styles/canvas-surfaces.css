@@ -150,9 +150,11 @@
   background: var(--canvas-surface);
 }
 
-/* Use the WHOLE page to write, edge-to-edge (dontpad-style) at every width.
-   No max-width cap. Modest side padding; BlockNote adds its own inner gutter. */
+/* Full page to write — edge-to-edge width AND full height (dontpad-style):
+   the editable area fills the whole surface so clicking anywhere focuses it. */
 .notes-workspace .bn-container {
+  display: flex;
+  flex-direction: column;
   max-width: none;
   width: 100%;
   height: 100%;
@@ -162,5 +164,7 @@
 }
 
 .notes-workspace .bn-editor {
+  flex: 1 1 auto;
+  min-height: 60vh; /* generous click target even before content fills it */
   font-family: var(--font-geist-sans), system-ui, sans-serif;
 }

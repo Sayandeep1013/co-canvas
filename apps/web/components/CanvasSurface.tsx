@@ -14,17 +14,21 @@ import type {
 } from "@excalidraw/excalidraw/types";
 import type { ExcalidrawElement } from "@excalidraw/excalidraw/element/types";
 import { AwarenessState, Identity } from "@canvas/shared";
-import { createExcalidrawBinding } from "@/lib/yjs/excalidrawBinding";
+import {
+  createExcalidrawBinding,
+  readCanvasElements,
+} from "@/lib/yjs/excalidrawBinding";
 import type { PeerState } from "@/lib/yjs/useRoom";
 import { useTheme } from "@/lib/theme";
+import { Loader } from "@/components/ui/Loader";
 
 const Excalidraw = dynamic(
   async () => (await import("@excalidraw/excalidraw")).Excalidraw,
   {
     ssr: false,
     loading: () => (
-      <div className="flex h-full items-center justify-center text-canvas-muted">
-        Loading canvas…
+      <div className="flex h-full items-center justify-center">
+        <Loader label="Loading canvas…" />
       </div>
     ),
   },
@@ -48,6 +52,8 @@ interface CanvasSurfaceProps {
   identity: Identity;
   peers: PeerState[];
   visible: boolean;
+  /** True once the room doc has loaded (IndexedDB/server) — gates mount. */
+  synced: boolean;
   onActive: () => void;
 }
 
@@ -57,6 +63,7 @@ export default function CanvasSurface({
   identity,
   peers,
   visible,
+  synced,
   onActive,
 }: CanvasSurfaceProps) {
   const theme = useTheme();
@@ -68,8 +75,23 @@ export default function CanvasSurface({
   const [apiReady, setApiReady] = useState(false);
   const [isEmpty, setIsEmpty] = useState(true);
 
+  // Don't mount Excalidraw until the doc has synced — so we can hand it the
+  // restored elements as initialData (elements passed at mount always paint,
+  // unlike updateScene into a hidden/just-mounted canvas). Fall back after a
+  // short wait so a slow/absent sync never blocks the canvas forever.
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    if (synced) {
+      setReady(true);
+      return;
+    }
+    const t = setTimeout(() => setReady(true), 1500);
+    return () => clearTimeout(t);
+  }, [synced]);
+
   const initialData = useMemo(
     () => ({
+      elements: ready ? readCanvasElements(doc) : [],
       appState: {
         viewBackgroundColor: "transparent",
         // Clean, design-tool defaults — drop Excalidraw's sketchy signature.
@@ -82,7 +104,7 @@ export default function CanvasSurface({
         gridSize: undefined,
       },
     }),
-    [],
+    [ready, doc],
   );
 
   const onApiReady = useCallback((api: ExcalidrawImperativeAPI) => {
@@ -96,16 +118,22 @@ export default function CanvasSurface({
     if (!apiReady || !apiRef.current) return;
 
     bindingRef.current?.destroy();
-    const binding = createExcalidrawBinding(
-      doc,
-      () => apiRef.current,
-      { getEditingElementId: () => editingIdRef.current },
-    );
+    const binding = createExcalidrawBinding(doc, () => apiRef.current, {
+      getEditingElementId: () => editingIdRef.current,
+      // Keep the empty-state overlay honest as remote edits arrive.
+      onApply: (hasContent) => setIsEmpty(!hasContent),
+    });
     bindingRef.current = binding;
     binding.hydrate();
 
     return () => binding.destroy();
   }, [doc, apiReady]);
+
+  // When the canvas becomes visible, recompute Excalidraw's dimensions so a
+  // scene built while it was display:none actually paints.
+  useEffect(() => {
+    if (visible && apiReady) apiRef.current?.refresh();
+  }, [visible, apiReady]);
 
   const onChange = useCallback(
     (
@@ -200,15 +228,21 @@ export default function CanvasSurface({
         </div>
       )}
 
-      <Excalidraw
-        excalidrawAPI={onApiReady}
-        initialData={initialData}
-        theme={theme}
-        isCollaborating
-        onChange={onChange}
-        onPointerUpdate={onPointerUpdate}
-        UIOptions={CANVAS_UI}
-      />
+      {ready ? (
+        <Excalidraw
+          excalidrawAPI={onApiReady}
+          initialData={initialData}
+          theme={theme}
+          isCollaborating
+          onChange={onChange}
+          onPointerUpdate={onPointerUpdate}
+          UIOptions={CANVAS_UI}
+        />
+      ) : (
+        <div className="flex h-full items-center justify-center">
+          <Loader label="Loading canvas…" />
+        </div>
+      )}
     </div>
   );
 }

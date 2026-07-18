@@ -91,6 +91,19 @@ function reconcileElements(
 
 export interface ExcalidrawBindingOptions {
   getEditingElementId?: () => string | null;
+  /** Called after each remote apply with whether the scene has visible content. */
+  onApply?: (hasContent: boolean) => void;
+}
+
+/** Read all current canvas elements out of the Yjs doc (for initial mount). */
+export function readCanvasElements(doc: Y.Doc): ExcalidrawElement[] {
+  const canvasMap = doc.getMap<Y.Map<unknown>>("canvas");
+  const els: ExcalidrawElement[] = [];
+  canvasMap.forEach((yEl) => {
+    const el = readElementFromYMap(yEl);
+    if (el) els.push(el);
+  });
+  return els;
 }
 
 export interface ExcalidrawBinding {
@@ -159,6 +172,7 @@ export function createExcalidrawBinding(
     } finally {
       applyingRemote = false;
     }
+    options.onApply?.(merged.some((e) => !e.isDeleted));
   };
 
   const onChange = (elements: readonly ExcalidrawElement[]) => {

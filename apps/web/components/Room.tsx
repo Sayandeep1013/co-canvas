@@ -81,12 +81,27 @@ function RoomConnected({
     onIdentity(next);
   };
 
+  // Restore the last-viewed surface for this room after a reload.
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(`canvas.surface.${slug}`);
+      if (saved === "notes" || saved === "canvas") setSurface(saved);
+    } catch {
+      /* storage disabled — ignore */
+    }
+  }, [slug]);
+
   useEffect(() => {
     updateAwareness({ activeSurface: surface });
   }, [surface, updateAwareness]);
 
   const setSurfaceAndNotify = (s: SurfaceId) => {
     setSurface(s);
+    try {
+      localStorage.setItem(`canvas.surface.${slug}`, s);
+    } catch {
+      /* storage disabled — ignore */
+    }
     updateAwareness({ activeSurface: s });
   };
 
@@ -184,6 +199,7 @@ function RoomConnected({
                 identity={identity}
                 peers={peers}
                 visible={surface === "canvas"}
+                synced={synced}
                 onActive={() => updateAwareness({ activeSurface: "canvas" })}
               />
             </>

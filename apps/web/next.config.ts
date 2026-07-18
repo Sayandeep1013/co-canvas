@@ -11,6 +11,8 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.join(__dirname, "../.."),
   },
+  // Hide the dev-mode indicator badge (it overlapped the logo in dev).
+  devIndicators: false,
 };
 
 export default nextConfig;

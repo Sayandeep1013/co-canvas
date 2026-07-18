@@ -35,3 +35,6 @@ coverage/
 
 # PartyKit local dev state (Durable Object storage)
 apps/party/.partykit/
+
+# Wrangler local state
+apps/party/.wrangler/

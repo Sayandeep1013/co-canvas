@@ -11,7 +11,7 @@ This runs **both** services in parallel:
 | Service | URL | What it does |
 |---------|-----|--------------|
 | **Web** (Next.js) | http://localhost:3000 | Frontend |
-| **Sync** (PartyKit + y-partykit) | http://localhost:1999 | Realtime collaboration + always-alive persistence |
+| **Sync** (partyserver + y-partyserver, via `wrangler dev`) | http://localhost:8787 | Realtime collaboration + always-alive persistence |
 
 ### Windows (PowerShell)
 
@@ -30,14 +30,15 @@ Or from repo root: `pnpm dev`
 ### If ports are stuck
 
 ```powershell
-# Find what's on 3000 or 1999, then kill the PID if needed
+# Find what's on 3000 or 8787, then kill the PID if needed
 netstat -ano | findstr :3000
-netstat -ano | findstr :1999
+netstat -ano | findstr :8787
 ```
 
 ### Sync server
 
-The realtime sync is a PartyKit worker (`apps/party`) using `y-partykit`. Each
-room slug is its own Cloudflare Durable Object; `persist: { mode: "snapshot" }`
-keeps rooms alive with zero connected clients. Deploy with `pnpm deploy:party`
+The realtime sync is a Cloudflare Worker (`apps/party`) built on `partyserver` +
+`y-partyserver`. Each room slug is its own Durable Object; `onLoad`/`onSave`
+persist the Yjs doc to DO storage, so rooms stay alive with zero connected
+clients. Deploy to your own Cloudflare account with `pnpm deploy:party`
 (see `docs/DEPLOY.md`).

@@ -1,37 +1,39 @@
 # Deploying CanVas (free)
 
-CanVas is **two services**, both with free tiers:
+CanVas is **two services**, both free:
 
 ```
-┌─────────────┐    wss://       ┌────────────────────────────┐
-│  Web (Next) │ ──────────────▶ │  Sync (PartyKit + y-partykit) │
-│   Vercel    │  NEXT_PUBLIC_   │  Cloudflare Durable Objects   │
-└─────────────┘  PARTYKIT_HOST  └────────────────────────────┘
+┌─────────────┐    wss://       ┌──────────────────────────────┐
+│  Web (Next) │ ──────────────▶ │  Sync (partyserver Worker)     │
+│   Vercel    │  NEXT_PUBLIC_   │  YOUR Cloudflare account (DO)   │
+└─────────────┘  PARTYKIT_HOST  └──────────────────────────────┘
 ```
 
-Rooms are **always alive**: each room slug is its own Durable Object and
-`persist: { mode: "snapshot" }` snapshots the doc to storage, so a room survives
-with zero connected clients and across restarts. No separate database needed.
+Rooms are **always alive**: each room slug is its own Cloudflare Durable Object,
+and `onLoad`/`onSave` persist the Yjs doc to DO storage — so a room survives with
+zero connected clients and across restarts. No separate database.
 
 ---
 
-## 1. Sync server → PartyKit (free)
+## 1. Sync server → your Cloudflare account (free)
 
 From the repo root:
 
 ```bash
 pnpm deploy:party
-# (equivalently: cd apps/party && npx partykit deploy)
+# (equivalently: cd apps/party && npx wrangler deploy)
 ```
 
-- First run prompts a **GitHub login** (PartyKit auth) — free, no Cloudflare
-  account of your own required; PartyKit hosts it on Cloudflare for you.
-- It deploys the worker in `apps/party` and prints a host like:
-  `canvas-sync.<your-username>.partykit.dev`
-- Health check: open `https://canvas-sync.<user>.partykit.dev/parties/main/health`
-  or just the host — the server responds `CanVas sync (PartyKit): OK`.
+- First run opens a browser to **log in to Cloudflare** (free account). Approve
+  the Wrangler access request.
+- It deploys the Worker in `apps/party` (Durable Object `Document`) and prints a
+  URL like: `https://canvas-sync.<your-subdomain>.workers.dev`
+- Health check: open that URL — it responds `CanVas sync (partyserver): OK`.
 
-That host (without protocol) is your `NEXT_PUBLIC_PARTYKIT_HOST`.
+That host (without `https://`) is your `NEXT_PUBLIC_PARTYKIT_HOST`.
+
+> First deploy may prompt you to enable a **workers.dev subdomain** — accept it;
+> it's free and gives you the `*.workers.dev` URL above.
 
 ---
 
@@ -43,7 +45,7 @@ That host (without protocol) is your `NEXT_PUBLIC_PARTYKIT_HOST`.
    - **Framework Preset:** Next.js (auto-detected)
    - Install/build are automatic (Vercel handles the pnpm workspace).
 3. **Environment Variables** → add:
-   - `NEXT_PUBLIC_PARTYKIT_HOST` = `canvas-sync.<your-username>.partykit.dev`
+   - `NEXT_PUBLIC_PARTYKIT_HOST` = `canvas-sync.<your-subdomain>.workers.dev`
      *(the host from step 1 — no `https://`, no trailing slash)*
 4. Deploy → `https://your-app.vercel.app`.
 
@@ -55,17 +57,19 @@ Open the Vercel URL, create a room, share the link. Done.
 
 | Service | Variable | Value | Required |
 |---------|----------|-------|----------|
-| Web (Vercel) | `NEXT_PUBLIC_PARTYKIT_HOST` | `canvas-sync.<user>.partykit.dev` | ✅ |
-| Sync (PartyKit) | — | none; persistence is built in | — |
+| Web (Vercel) | `NEXT_PUBLIC_PARTYKIT_HOST` | `canvas-sync.<subdomain>.workers.dev` | ✅ |
+| Sync (Cloudflare) | — | none; persistence is built in | — |
 
-Local dev uses `partykit dev` on `localhost:1999` and the client defaults to it,
+Local dev uses `wrangler dev` on `localhost:8787` and the client defaults to it,
 so nothing is needed locally.
 
 ---
 
 ## Notes
 
-- **Custom domain:** both Vercel and PartyKit support custom domains on free tiers.
-- **Scaling / limits:** PartyKit's free tier is generous for a hobby app; Durable
-  Objects are always-on (no cold-start sleep like a free Render web service).
+- **Custom domain:** both Vercel and Cloudflare support free custom domains.
+- **Always-on:** Cloudflare Durable Objects don't cold-sleep like a free Render
+  web service — rooms are genuinely always available.
 - **Auth:** intentionally none — anyone who knows/guesses a room name joins it.
+- **Cost:** Cloudflare's Workers/Durable Objects free tier is generous for a
+  hobby app; you only pay if you far exceed it.

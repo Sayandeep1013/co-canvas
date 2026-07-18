@@ -2,11 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import * as Y from "yjs";
-import YPartyKitProvider from "y-partykit/provider";
+import YProvider from "y-partyserver/provider";
 import { IndexeddbPersistence } from "y-indexeddb";
 import type { Awareness } from "y-protocols/awareness";
 import { AwarenessState, Identity, SurfaceId } from "@canvas/shared";
-import { PARTYKIT_HOST } from "./constants";
+import { PARTYKIT_HOST, PARTY_NAME } from "./constants";
 
 export type ConnectionStatus = "connecting" | "connected" | "disconnected";
 
@@ -19,8 +19,8 @@ export interface PeerState {
 export interface RoomHandle {
   doc: Y.Doc;
   awareness: Awareness | null;
-  /** PartyKit Yjs provider — BlockNote binds to this for collaboration. */
-  provider: YPartyKitProvider | null;
+  /** partyserver Yjs provider — BlockNote binds to this for collaboration. */
+  provider: YProvider | null;
   status: ConnectionStatus;
   synced: boolean;
   peers: PeerState[];
@@ -34,7 +34,7 @@ export function useRoom(roomSlug: string, identity: Identity): RoomHandle {
   const [synced, setSynced] = useState(false);
   const [peers, setPeers] = useState<PeerState[]>([]);
   const [awareness, setAwareness] = useState<Awareness | null>(null);
-  const [provider, setProvider] = useState<YPartyKitProvider | null>(null);
+  const [provider, setProvider] = useState<YProvider | null>(null);
 
   useEffect(() => {
     // Local persistence (offline + instant reload). We deliberately do NOT gate
@@ -42,7 +42,7 @@ export function useRoom(roomSlug: string, identity: Identity): RoomHandle {
     // with an empty doc, before the server's content arrives.
     const idb = new IndexeddbPersistence(`canvas-room-${roomSlug}`, doc);
 
-    const ws = new YPartyKitProvider(PARTYKIT_HOST, roomSlug, doc);
+    const ws = new YProvider(PARTYKIT_HOST, roomSlug, doc, { party: PARTY_NAME });
     setAwareness(ws.awareness);
     setProvider(ws);
 

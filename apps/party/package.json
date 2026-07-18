@@ -2,16 +2,18 @@
   "name": "party",
   "version": "0.0.0",
   "private": true,
-  "description": "CanVas realtime sync — PartyKit + y-partykit on Cloudflare Durable Objects (always-alive rooms)",
+  "description": "CanVas realtime sync — partyserver + y-partyserver on your own Cloudflare (always-alive rooms)",
   "scripts": {
-    "dev": "partykit dev",
-    "deploy": "partykit deploy"
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
   },
   "dependencies": {
-    "y-partykit": "^0.0.33",
+    "partyserver": "^0.0.72",
+    "y-partyserver": "^0.0.36",
     "yjs": "^13.6.31"
   },
   "devDependencies": {
-    "partykit": "^0.0.114"
+    "@cloudflare/workers-types": "^4.20250101.0",
+    "wrangler": "^4.20.0"
   }
 }

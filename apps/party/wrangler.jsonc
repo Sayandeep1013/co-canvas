@@ -1,0 +1,10 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "canvas-sync",
+  "main": "src/server.ts",
+  "compatibility_date": "2025-01-01",
+  "durable_objects": {
+    "bindings": [{ "name": "Document", "class_name": "Document" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Document"] }]
+}

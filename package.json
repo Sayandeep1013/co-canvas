@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "pnpm --parallel --filter web --filter party dev",
     "dev:web": "pnpm --filter web dev",
-    "dev:party": "pnpm --filter party dev",
-    "deploy:party": "pnpm --filter party deploy",
+    "dev:party": "pnpm --filter party run dev",
+    "deploy:party": "pnpm --filter party run deploy",
     "build": "pnpm --filter web build",
     "lint": "pnpm --filter web lint"
   },
